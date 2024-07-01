@@ -1,0 +1,17 @@
+.chartContainer {
+    width: 40%;
+    height: 20%;
+    margin: 0 auto;
+    
+    h3 {
+        text-align: center;
+        padding-top: 0.5em;
+        border-top: 4px solid rgb(44, 168, 209);
+    }
+
+    @media (max-width:55em) {
+        width: 70%;
+        height: 20%;
+    }
+  }
+  

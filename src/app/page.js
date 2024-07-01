@@ -1,95 +1,110 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
+import styles from "./page.module.scss";
+import React, { useEffect, useState } from 'react';
+import FilterMenu from '@/components/filterMenu';
+import AveragePrice from '@/components/priceDisplay';
+import BarChart from '@/components/barChart';
+import { motion } from 'framer-motion';
+import { introSlide } from '../animations/anim';
 
 export default function Home() {
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+
+  const [uniqueValues, setUniqueValues] = useState({
+    saisons: [],
+    niveaux: [],
+    passes: []
+  });
+
+  const [filters, setFilters] = useState({
+    saison: '',
+    niveau: '',
+    passe: ''
+  });
+
+  //No dependency so it triggers once initially
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/data');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const json = await response.json();
+        setData(json);
+        setUniqueValues({
+          saisons: [...new Set(json.map(item => item.saison))],
+          niveaux: [...new Set(json.map(item => item.niveau))],
+          passes: [...new Set(json.map(item => item.passe))]
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  //Triggers when the filter cahnge
+  useEffect(() => {
+    let filtered = data;
+    if (filters.saison) {
+      filtered = filtered.filter(item => item.saison === filters.saison);
+    }
+    if (filters.niveau) {
+      filtered = filtered.filter(item => item.niveau === filters.niveau);
+    }
+    if (filters.passe) {
+      filtered = filtered.filter(item => item.passe === filters.passe);
+    }
+    setFilteredData(filtered);
+  }, [data, filters]);
+
+  //For the dropdown menus
+  const handleFilterChange = (name, value) => {
+    setFilters({
+      ...filters,
+      [name]: value
+    });
+  };
+
+  //To reset the filter menus
+  const handleResetFilters = () => {
+    setFilters({
+      saison: '',
+      niveau: '',
+      passe: ''
+    });
+  };
+  
+  const calculateAveragePrice = (data) => {
+    //Reduce: Iterate a travers data en ajoutant au prochain, commencant par 0
+    const total = data.reduce((accumulate, item) => accumulate + item.prix, 0);
+    return total / data.length || 0;
+  };
+
+  //No filters, dont use filteredData
+  const avgPrice = filters.saison || filters.niveau || filters.passe ? calculateAveragePrice(filteredData) : calculateAveragePrice(data);
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+      <div className={styles.header}>
+        <div className={styles.intro}>
+          <motion.p variants={introSlide} animate="enter" initial="initial">Dashboard</motion.p>
+          {/* <pre>{JSON.stringify(uniqueValues, null, 2)}</pre> */}
+          <FilterMenu onFilterChange={handleFilterChange} uniqueValues={uniqueValues} filters={filters} onResetFilters={handleResetFilters}/>
         </div>
+        
+        <AveragePrice avgPrice={avgPrice}/>
       </div>
+      
+      
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className={styles.charts}>
+          <BarChart title="Quantité par niveau" data={filteredData} groupBy="niveau" onFilterChange={handleFilterChange} />
+          <BarChart title="Quantité par saison" data={filteredData} groupBy="saison" onFilterChange={handleFilterChange} />
+          <BarChart title="Quantité par groupe d'âges" data={filteredData} groupBy="ageGroup" onFilterChange={handleFilterChange} />
       </div>
     </main>
-  );
+  )
 }
