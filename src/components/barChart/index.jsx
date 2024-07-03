@@ -4,7 +4,7 @@ import { Chart, registerables } from 'chart.js';
 import styles from './style.module.scss';
 Chart.register(...registerables);
 
-export default function index({ title, data, groupBy, onFilterChange }) {
+export default function BarChart({ title, data, groupBy, onFilterChange }) {
 
     const groupData = data.reduce((acc, item) => {
       const key = groupBy === 'ageGroup' 

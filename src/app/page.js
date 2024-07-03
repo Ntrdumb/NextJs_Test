@@ -1,9 +1,9 @@
 'use client'
 import styles from "./page.module.scss";
 import React, { useEffect, useState } from 'react';
-import FilterMenu from '@/components/filterMenu';
-import AveragePrice from '@/components/priceDisplay';
-import BarChart from '@/components/barChart';
+import FilterMenu from '@/components/filterMenu/index';
+import PriceDisplay from '@/components/priceDisplay/index';
+import BarChart from '@/components/barChart/index';
 import { motion } from 'framer-motion';
 import { introSlide } from '../animations/anim';
 
@@ -95,7 +95,7 @@ export default function Home() {
           <FilterMenu onFilterChange={handleFilterChange} uniqueValues={uniqueValues} filters={filters} onResetFilters={handleResetFilters}/>
         </div>
         
-        <AveragePrice avgPrice={avgPrice}/>
+        <PriceDisplay avgPrice={avgPrice}/>
       </div>
       
       

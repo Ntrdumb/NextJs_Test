@@ -3,7 +3,7 @@ import styles from './style.module.scss';
 import { motion } from 'framer-motion';
 import { filterSlide } from '../../animations/anim';
 
-export default function index({ onFilterChange, uniqueValues, filters, onResetFilters  }) {
+export default function FilterMenu({ onFilterChange, uniqueValues, filters, onResetFilters  }) {
     const selectOptions = ['Saisons', 'Niveaux', 'Passes'];
     
     return (
